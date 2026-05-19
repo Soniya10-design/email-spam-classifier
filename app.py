@@ -1,33 +1,56 @@
 import gradio as gr
 import joblib
+import os
 
-# Load model
-model = joblib.load("spam_classifier_model.joblib")
+# =========================
+# SAFE MODEL LOADING
+# =========================
 
-# Prediction function
-def classify_email(email_text):
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "spam_classifier_model.joblib")
 
-    if not email_text.strip():
-        return "Please enter email text."
+model = joblib.load(MODEL_PATH)
 
-    prediction = model.predict([email_text])[0]
+# =========================
+# PREDICTION FUNCTION
+# =========================
 
-    if prediction.lower() == "spam":
-        return "🚨 Spam Email"
+def classify_email(text):
+    try:
+        if not text or text.strip() == "":
+            return "⚠️ Please enter some email text"
 
-    return "✅ Safe Email"
+        prediction = model.predict([text])[0]
 
-# Gradio interface
+        # Normalize output just in case
+        prediction = prediction.lower().strip()
+
+        if prediction == "spam":
+            return "🚨 Spam Email Detected"
+        else:
+            return "✅ Safe Email (Ham)"
+
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+# =========================
+# GRADIO UI
+# =========================
+
 interface = gr.Interface(
     fn=classify_email,
     inputs=gr.Textbox(
         lines=8,
         placeholder="Paste email text here..."
     ),
-    outputs="text",
+    outputs=gr.Textbox(label="Result"),
     title="Email Spam Classifier",
-    description="AI model to classify spam and safe emails."
+    description="AI model that detects whether an email is Spam or Safe (Ham).",
+    theme="soft"
 )
 
-# Launch app
-interface.launch()
+# =========================
+# RUN APP
+# =========================
+
+if __name__ == "__main__":
+    interface.launch()
