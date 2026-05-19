@@ -21,6 +21,17 @@ def classify_email(text):
 
         prediction = model.predict([text])[0]
 
+        # Convert everything safely to string first
+        prediction = str(prediction).lower().strip()
+
+        if prediction in ["spam", "1", "1.0"]:
+            return "🚨 Spam Email Detected"
+        else:
+            return "✅ Safe Email (Ham)"
+
+    except Exception as e:
+        return f"Error: {str(e)}"
+
         # Normalize output just in case
         prediction = prediction.lower().strip()
 
