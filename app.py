@@ -3,47 +3,72 @@ import joblib
 import os
 
 # =========================
-# SAFE MODEL LOADING
+# LOAD TRAINED MODEL
 # =========================
 
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "spam_classifier_model.joblib")
+MODEL_PATH = os.path.join(
+    os.path.dirname(__file__),
+    "spam_classifier_model.joblib"
+)
 
 model = joblib.load(MODEL_PATH)
 
 # =========================
-# PREDICTION FUNCTION
+# EMAIL CLASSIFICATION FUNCTION
 # =========================
 
 def classify_email(text):
+
     try:
+
+        # Empty input check
         if not text.strip():
             return "⚠️ Please enter email text"
 
+        # Predict
         prediction = model.predict([text])[0]
 
-        # Handle numeric predictions
-        if str(prediction) in ["1", "1.0"]:
+        # Convert prediction safely
+        prediction = str(prediction).lower().strip()
+
+        # Result
+        if prediction == "spam":
             return "🚨 Spam Email Detected"
+
         else:
             return "✅ Safe Email (Ham)"
 
     except Exception as e:
         return f"Error: {str(e)}"
-        
+
+# =========================
+# GRADIO INTERFACE
+# =========================
+
 interface = gr.Interface(
     fn=classify_email,
+
     inputs=gr.Textbox(
-        lines=8,
-        placeholder="Paste email text here..."
+        lines=10,
+        placeholder="Paste your email text here..."
     ),
-    outputs=gr.Textbox(label="Result"),
-    title="Email Spam Classifier",
-    description="AI model that detects whether an email is Spam or Safe (Ham).",
+
+    outputs=gr.Textbox(
+        label="Prediction Result"
+    ),
+
+    title="📧 Email Spam Classifier",
+
+    description="""
+This AI model detects whether an email is Spam or Safe (Ham).
+Paste any email text and test the prediction.
+""",
+
     theme="soft"
 )
 
 # =========================
-# RUN APP
+# LAUNCH APP
 # =========================
 
 if __name__ == "__main__":
