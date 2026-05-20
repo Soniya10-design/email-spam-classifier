@@ -16,37 +16,20 @@ model = joblib.load(MODEL_PATH)
 
 def classify_email(text):
     try:
-        if not text or text.strip() == "":
-            return "⚠️ Please enter some email text"
+        if not text.strip():
+            return "⚠️ Please enter email text"
 
         prediction = model.predict([text])[0]
 
-        # Convert everything safely to string first
-        prediction = str(prediction).lower().strip()
-
-        if prediction in ["spam", "1", "1.0"]:
+        # Handle numeric predictions
+        if str(prediction) in ["1", "1.0"]:
             return "🚨 Spam Email Detected"
         else:
             return "✅ Safe Email (Ham)"
 
     except Exception as e:
         return f"Error: {str(e)}"
-
-        # Normalize output just in case
-        prediction = prediction.lower().strip()
-
-        if prediction == "spam":
-            return "🚨 Spam Email Detected"
-        else:
-            return "✅ Safe Email (Ham)"
-
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-# =========================
-# GRADIO UI
-# =========================
-
+        
 interface = gr.Interface(
     fn=classify_email,
     inputs=gr.Textbox(
